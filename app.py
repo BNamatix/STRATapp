@@ -1,6 +1,6 @@
 import base64
 from datetime import datetime
-
+import streamlit.components.v1 as components
 import pandas as pd
 import plotly.graph_objects as go
 import pytz
@@ -9,12 +9,30 @@ import streamlit as st
 from src.scanner import run_scan
 from src.data_loader import get_stock_data
 
-
 st.set_page_config(
     page_title="The STRATapp Scanner",
     layout="wide"
 )
 
+components.html(
+    """
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3PTS6JR0EP"></script>
+
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag(){
+          dataLayer.push(arguments);
+      }
+
+      gtag('js', new Date());
+
+      gtag('config', 'G-3PTS6JR0EP');
+    </script>
+    """,
+    height=0
+)
 
 # ---------- MARKET STATUS ----------
 
@@ -24,9 +42,9 @@ minute = ny_time.minute
 weekday = ny_time.weekday()
 
 market_open = (
-    weekday < 5
-    and (hour > 9 or (hour == 9 and minute >= 30))
-    and hour < 16
+        weekday < 5
+        and (hour > 9 or (hour == 9 and minute >= 30))
+        and hour < 16
 )
 
 if market_open:
@@ -36,12 +54,10 @@ else:
     market_status = "🔴 MARKET CLOSED"
     market_color = "#dc2626"
 
-
 # ---------- LOGO ----------
 
 with open("assets/bnamatix_logo.png", "rb") as f:
     logo_base64 = base64.b64encode(f.read()).decode()
-
 
 # ---------- CSS ----------
 
@@ -119,7 +135,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
 
 # ---------- HEADER ----------
 
@@ -352,7 +367,6 @@ with center:
         """,
         unsafe_allow_html=True
     )
-
 
 # ---------- RESULTS ----------
 
