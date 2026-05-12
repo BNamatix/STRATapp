@@ -5,7 +5,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import pytz
 import streamlit as st
-
+from textwrap import dedent
 from src.scanner import run_scan
 from src.data_loader import get_stock_data
 
@@ -370,6 +370,8 @@ with center:
 
 # ---------- RESULTS ----------
 
+# ---------- RESULTS ----------
+
 if st.session_state.scan_results:
     df_results = pd.DataFrame(st.session_state.scan_results)
 
@@ -383,20 +385,14 @@ if st.session_state.scan_results:
             background-color:#123524;
             color:#4cff88;
             border-radius:10px;
-            font-weight:600;
-            margin-bottom:15px;
+            font-weight:700;
+            margin-bottom:22px;
         ">
-            Top 5 setups found
+            ✅ Top 5 setups found
         </div>
         """,
         unsafe_allow_html=True
     )
-
-    st.subheader("⭐ Highest Probability Setup")
-
-    col1, col2, col3, col4, col5 = st.columns(5)
-
-    col1.metric("Ticker", best["Ticker"])
 
     short_setup = (
         best["Setup"]
@@ -404,13 +400,71 @@ if st.session_state.scan_results:
         .replace("Reversal", "REV")
     )
 
-    col2.metric("Setup", short_setup)
-    col3.metric("Score", int(best["Score"]))
-    col4.metric("Entry", best["Entry"])
-    col5.metric("Target", best["Target"])
+    components.html(
+        f"""
+        <div style="
+            width:100%;
+            box-sizing:border-box;
+            padding:26px 34px;
+            border-radius:22px;
+            background:linear-gradient(135deg, rgba(22,163,74,0.18), rgba(15,23,42,0.96));
+            border:1px solid rgba(34,197,94,0.35);
+            box-shadow:0 18px 45px rgba(0,0,0,0.35);
+            font-family:Arial, sans-serif;
+        ">
+
+            <div style="
+                font-size:30px;
+                font-weight:900;
+                color:white;
+                margin-bottom:26px;
+            ">
+                ⭐ Highest Probability Setup
+            </div>
+
+            <div style="
+                display:grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap:22px;
+                text-align:center;
+            ">
+
+                <div>
+                    <div style="color:#cbd5e1; font-size:14px; font-weight:700;">Ticker</div>
+                    <div style="color:white; font-size:38px; font-weight:900;">{best["Ticker"]}</div>
+                </div>
+
+                <div>
+                    <div style="color:#cbd5e1; font-size:14px; font-weight:700;">Setup</div>
+                    <div style="color:#4ade80; font-size:38px; font-weight:900;">{short_setup}</div>
+                </div>
+
+                <div>
+                    <div style="color:#cbd5e1; font-size:14px; font-weight:700;">Score</div>
+                    <div style="color:white; font-size:38px; font-weight:900;">{int(best["Score"])}</div>
+                </div>
+
+                <div>
+                    <div style="color:#cbd5e1; font-size:14px; font-weight:700;">Entry</div>
+                    <div style="color:white; font-size:38px; font-weight:900;">{float(best["Entry"]):.2f}</div>
+                </div>
+
+                <div>
+                    <div style="color:#cbd5e1; font-size:14px; font-weight:700;">Target</div>
+                    <div style="color:#4ade80; font-size:38px; font-weight:900;">{float(best["Target"]):.2f}</div>
+                </div>
+
+            </div>
+        </div>
+        """,
+        height=230
+    )
+
+    df_display = df_results.copy()
+    df_display.index = df_display.index + 1
 
     st.dataframe(
-        df_results.style
+        df_display.style
         .format({
             "Last Price": "{:.2f}",
             "Entry": "{:.2f}",

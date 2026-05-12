@@ -106,11 +106,20 @@ def run_scan():
 
         levels = calculate_trade_levels(df)
 
-        # Reject tiny moves
+        # Reject invalid / tiny moves
+        if levels is None:
+            continue
+
+        if levels.get("Reward $") is None:
+            continue
+
+        if levels.get("RR") is None:
+            continue
+
         if levels["Reward $"] < 1.5:
             continue
 
-        if levels["RR"] is None or levels["RR"] < 1.5:
+        if levels["RR"] < 1.5:
             continue
 
         last_row = df.iloc[-1]
