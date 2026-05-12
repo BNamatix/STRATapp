@@ -1,134 +1,157 @@
-import streamlit as st
+import base64
+from datetime import datetime
+
 import pandas as pd
 import plotly.graph_objects as go
+import pytz
+import streamlit as st
 
 from src.scanner import run_scan
 from src.data_loader import get_stock_data
+
 
 st.set_page_config(
     page_title="The STRATapp Scanner",
     layout="wide"
 )
 
+
+# ---------- MARKET STATUS ----------
+
+ny_time = datetime.now(pytz.timezone("US/Eastern"))
+hour = ny_time.hour
+minute = ny_time.minute
+weekday = ny_time.weekday()
+
+market_open = (
+    weekday < 5
+    and (hour > 9 or (hour == 9 and minute >= 30))
+    and hour < 16
+)
+
+if market_open:
+    market_status = "🟢 MARKET OPEN"
+    market_color = "#16a34a"
+else:
+    market_status = "🔴 MARKET CLOSED"
+    market_color = "#dc2626"
+
+
+# ---------- LOGO ----------
+
+with open("assets/bnamatix_logo.png", "rb") as f:
+    logo_base64 = base64.b64encode(f.read()).decode()
+
+
+# ---------- CSS ----------
+
 st.markdown(
     """
     <style>
+    .block-container {
+        padding-top: 0.5rem !important;
+    }
+
+    .brand-header {
+        max-width: 760px;
+        margin: 0 auto 18px auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .brand-logo {
+        width: 300px;
+    }
+
+    .market-badge {
+        padding: 4px 18px;
+        border-radius: 999px;
+        font-size: 14px;
+        font-weight: 800;
+        white-space: nowrap;
+        margin-top: 70px;
+    }
+
     .main-title {
-        text-align:center;
-        font-size:54px;
-        font-weight:800;
-        color:white;
-        margin-top:20px;
-        margin-bottom:6px;
+        text-align: center;
+        font-size: 56px;
+        font-weight: 900;
+        color: white;
+        margin-top: 18px;
+        margin-bottom: 10px;
+        line-height: 1.1;
     }
 
     .sub-title {
-        text-align:center;
-        font-size:18px;
-        color:#94a3b8;
-        margin-bottom:35px;
+        text-align: center;
+        font-size: 18px;
+        color: #94a3b8;
+        margin-bottom: 28px;
     }
 
     div.stButton > button:first-child {
-    width:100% !important;
-    max-width:520px !important;
+        width: 100% !important;
+        max-width: 520px !important;
+        margin: auto !important;
+        display: block !important;
+        height: 82px !important;
+        border-radius: 22px !important;
+        border: none !important;
+        background: linear-gradient(135deg, #2563eb, #16a34a) !important;
+        color: white !important;
+        box-shadow: 0px 12px 34px rgba(37,99,235,0.38) !important;
+        transition: 0.25s !important;
+    }
 
-    margin:auto !important;
-    display:block !important;
-
-    height:82px !important;
-
-    border-radius:22px !important;
-    border:none !important;
-
-    font-size:30px !important;
-    font-weight:800 !important;
-    letter-spacing:0.5px !important;
-
-    background:linear-gradient(
-        135deg,
-        #2563eb,
-        #16a34a
-    ) !important;
-
-    color:white !important;
-
-    box-shadow:0px 12px 34px rgba(37,99,235,0.38) !important;
-
-    transition:0.25s !important;
-}
-
-div.stButton > button:first-child p {
-    font-size:42px !important;
-    font-weight:900 !important;
-    color:white !important;
-}
-
-    color:white;
-
-    box-shadow:0px 12px 34px rgba(37,99,235,0.38);
-
-    transition:0.25s;
-}
+    div.stButton > button:first-child p {
+        font-size: 42px !important;
+        font-weight: 900 !important;
+        color: white !important;
+    }
 
     div.stButton > button:first-child:hover {
-        transform:scale(1.03);
-        color:white;
-        border:none;
-    }
-
-    .idle-box {
-        text-align:center;
-        max-width:760px;
-        margin:35px auto 0 auto;
-        padding:16px 24px;
-        background-color:#111827;
-        border:1px solid #1f2937;
-        color:#cbd5e1;
-        border-radius:14px;
-        font-size:16px;
-    }
-
-    .logo-box {
-        width:42px;
-        height:42px;
-        border-radius:12px;
-        background:linear-gradient(135deg, #2563eb, #16a34a);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        color:white;
-        font-size:24px;
-        font-weight:800;
-        box-shadow:0 6px 18px rgba(37,99,235,0.35);
-    }
-
-    .header-row {
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        gap:16px;
-        margin-top:20px;
+        transform: scale(1.03);
+        color: white;
+        border: none;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
 
+
+# ---------- HEADER ----------
+
 st.markdown(
-    """
-    <div class="header-row">
-        <div class="logo-box">◢</div>
-        <div class="main-title" style="margin:0;">The STRATapp Scanner</div>
+    f"""
+    <div class="brand-header">
+        <img class="brand-logo" src="data:image/png;base64,{logo_base64}">
+        <div
+            class="market-badge"
+            style="
+                background:{market_color}22;
+                color:{market_color};
+                border:1px solid {market_color}55;
+            "
+        >
+            {market_status}
+        </div>
     </div>
 
-    <div class="sub-title" style="margin-top:10px;">
-        Daily STRAT setups. Ranked and ready.
+    <div class="main-title">
+        The STRATapp Scanner
+    </div>
+
+    <div class="sub-title">
+        AI-ranked STRAT setups for active traders.
     </div>
     """,
     unsafe_allow_html=True
 )
 
+
+# ---------- CHART ----------
 
 def plot_trade_chart(ticker, entry, stop, target):
     df = get_stock_data(ticker, period="2mo", interval="1d")
@@ -294,8 +317,10 @@ def plot_trade_chart(ticker, entry, stop, target):
         bargap=0.08
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
+
+# ---------- ACTION AREA ----------
 
 if "scan_results" not in st.session_state:
     st.session_state.scan_results = None
@@ -305,7 +330,7 @@ left, center, right = st.columns([1.5, 1, 1.5])
 with center:
     run_clicked = st.button(
         "Find Best Setups",
-        use_container_width=True
+        width="stretch"
     )
 
     if run_clicked:
@@ -328,6 +353,9 @@ with center:
         unsafe_allow_html=True
     )
 
+
+# ---------- RESULTS ----------
+
 if st.session_state.scan_results:
     df_results = pd.DataFrame(st.session_state.scan_results)
 
@@ -344,7 +372,7 @@ if st.session_state.scan_results:
             font-weight:600;
             margin-bottom:15px;
         ">
-            ✅ Top 5 setups found
+            Top 5 setups found
         </div>
         """,
         unsafe_allow_html=True
@@ -384,7 +412,7 @@ if st.session_state.scan_results:
         .set_properties(**{
             "text-align": "center"
         }),
-        use_container_width=True
+        width="stretch"
     )
 
     selected_ticker = st.radio(
@@ -409,6 +437,3 @@ if st.session_state.scan_results:
         stop=selected_row["Stop"],
         target=selected_row["Target"]
     )
-
-else:
-    pass
