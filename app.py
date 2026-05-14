@@ -154,7 +154,7 @@ st.markdown(
         font-size: 18px;
         color: #94a3b8;
         margin-bottom: 18px;
-        margin-left: 360px;
+        margin-left: 150px;
     }
 
     div.stButton > button:first-child {
@@ -203,6 +203,27 @@ st.markdown(
     <div class="sub-title">
         AI-ranked STRAT setups for active traders.
     </div>
+    
+    
+    <div style='
+        text-align:center;
+        margin-top:8px;
+        margin-bottom:18px;
+    '>
+        <span style='
+            padding:4px 10px;
+            border-radius:999px;
+            background:rgba(59,130,246,0.12);
+            border:1px solid rgba(59,130,246,0.25);
+            color:#7dd3fc;
+            font-size:11px;
+            font-weight:800;
+            letter-spacing:0.5px;
+        '>
+            BETA v1
+        </span>
+    </div>
+    
     """,
     unsafe_allow_html=True
 )
