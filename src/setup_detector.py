@@ -1,29 +1,83 @@
+def is_valid_212u(df):
+    last_2 = df.tail(2)["strat"].tolist()
+
+    if last_2 != ["2D", "1"]:
+        return False
+
+    trigger_candle = df.iloc[-1]
+    signal_candle = df.iloc[-2]
+
+    trigger_high = float(trigger_candle["High"])
+    trigger_low = float(trigger_candle["Low"])
+
+    signal_high = float(signal_candle["High"])
+    signal_low = float(signal_candle["Low"])
+
+    inside_bar = (
+            trigger_high <= signal_high
+            and trigger_low >= signal_low
+    )
+
+    if not inside_bar:
+        return False
+
+    inside_range = trigger_high - trigger_low
+    signal_range = signal_high - signal_low
+
+    if inside_range < (signal_range * 0.25):
+        return False
+
+    return True
+
+
+def is_valid_312u(df):
+    last_2 = df.tail(2)["strat"].tolist()
+
+    if last_2 != ["3", "1"]:
+        return False
+
+    inside_candle = df.iloc[-1]
+    outside_candle = df.iloc[-2]
+
+    inside_high = float(inside_candle["High"])
+    inside_low = float(inside_candle["Low"])
+
+    outside_high = float(outside_candle["High"])
+    outside_low = float(outside_candle["Low"])
+
+    inside_bar = (
+            inside_high <= outside_high
+            and inside_low >= outside_low
+    )
+
+    if not inside_bar:
+        return False
+
+    inside_range = inside_high - inside_low
+    outside_range = outside_high - outside_low
+
+    if inside_range < (outside_range * 0.25):
+        return False
+
+    return True
+
+
 def detect_latest_setup(df):
     if df is None or len(df) < 3:
         return None
 
     last_2 = df.tail(2)["strat"].tolist()
-    last_1 = df.iloc[-1]["strat"]
 
-    # Pending 2-1-2U
-    # Yesterday/previous candle = 2D
-    # Last closed candle = 1
-    # Tomorrow trigger = 2U
-    if last_2 == ["2D", "1"]:
+    if is_valid_212u(df):
         return "Pending 2-1-2U"
 
     # Pending 3-1-2U
-    # Previous candle = 3
-    # Last closed candle = 1
-    # Tomorrow trigger = 2U
-    if last_2 == ["3", "1"]:
+    if is_valid_312u(df):
         return "Pending 3-1-2U"
 
-    # Pending 2D-2U Reversal
-    # Last closed candle is 2D
-    # Tomorrow trigger above its high
-    if last_1 == "2D":
-        return "Pending 2D-2U Reversal"
+    # Temporarily disabled - too broad for valid long setups
+    # if df.iloc[-1]["strat"] == "2D":
+    #     return "Pending 2D-2U Reversal"
 
     return None
 

@@ -11,7 +11,7 @@ from src.setup_detector import (
     detect_latest_setup,
     calculate_trade_levels
 )
-
+from src.market_context import get_analysis_df
 
 def calculate_score(setup, rr, volume, weekly_ok):
     score = 0
@@ -92,7 +92,12 @@ def run_scan():
         # if has_earnings:
         #     continue
 
-        df = get_stock_data(ticker)
+        df_raw = get_stock_data(ticker)
+
+        if df_raw is None or len(df_raw) < 5:
+            continue
+
+        df = get_analysis_df(df_raw)
 
         if df is None or len(df) < 5:
             continue

@@ -8,10 +8,59 @@ import streamlit as st
 from textwrap import dedent
 from src.scanner import run_scan
 from src.data_loader import get_stock_data
+from src.market_context import is_market_open
 
 st.set_page_config(
     page_title="The STRATapp Scanner",
     layout="wide"
+)
+
+st.markdown(
+    """
+    <style>
+    .top-ticker-wrap {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 28px;
+        overflow: hidden;
+        background: #020617;
+        z-index: 999999999;
+        border-bottom: 1px solid rgba(148,163,184,0.15);
+    }
+
+    .top-ticker {
+        display: inline-block;
+        white-space: nowrap;
+        color: #7dd3fc;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 28px;
+        animation: tickerMove 18s linear infinite;
+    }
+
+    @keyframes tickerMove {
+        from {
+            transform: translateX(100vw);
+        }
+        to {
+            transform: translateX(-100%);
+        }
+    }
+
+    .block-container {
+        padding-top: 1.8rem !important;
+    }
+    </style>
+
+    <div class="top-ticker-wrap">
+        <div class="top-ticker">
+            Educational use only • Not financial advice • Trade at your own risk
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
 )
 
 components.html(
@@ -78,6 +127,7 @@ st.markdown(
 
     .brand-logo {
         width: 300px;
+        margin-left: -60px;
     }
 
     .market-badge {
@@ -103,7 +153,8 @@ st.markdown(
         text-align: center;
         font-size: 18px;
         color: #94a3b8;
-        margin-bottom: 28px;
+        margin-bottom: 18px;
+        margin-left: 360px;
     }
 
     div.stButton > button:first-child {
@@ -142,16 +193,7 @@ st.markdown(
     f"""
     <div class="brand-header">
         <img class="brand-logo" src="data:image/png;base64,{logo_base64}">
-        <div
-            class="market-badge"
-            style="
-                background:{market_color}22;
-                color:{market_color};
-                border:1px solid {market_color}55;
-            "
-        >
-            {market_status}
-        </div>
+        
     </div>
 
     <div class="main-title">
@@ -169,7 +211,11 @@ st.markdown(
 # ---------- CHART ----------
 
 def plot_trade_chart(ticker, entry, stop, target):
-    df = get_stock_data(ticker, period="2mo", interval="1d")
+    df_raw = get_stock_data(ticker, period="2mo", interval="1d")
+
+    from src.market_context import get_analysis_df
+
+    df = get_analysis_df(df_raw)
 
     if df is None or df.empty:
         st.warning("No chart data available")
@@ -352,23 +398,76 @@ with center:
         with st.spinner("Scanning and ranking best setups..."):
             st.session_state.scan_results = run_scan()
 
-    st.markdown(
-        """
-        <div style="
-            text-align:center;
-            color:#94a3b8;
-            font-size:14px;
-            font-weight:500;
-            margin-top:18px;
-            margin-bottom:28px;
-        ">
-            Educational use only • Not financial advice • Trade at your own risk
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    market_is_open = is_market_open()
 
-# ---------- RESULTS ----------
+    if market_is_open:
+        st.markdown(
+            """
+            <div style="
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+                margin: 15px 0;
+            ">
+                <div style="
+                    padding: 10px 24px;
+                    border-radius: 12px;
+                    background: rgba(22, 163, 74, 0.10);
+                    border: 1px solid rgba(34, 197, 94, 0.35);
+                    color: #d1fae5;
+                    font-size: 14px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    display: inline-flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 4px;
+                ">
+                    <div style="font-weight: 700; font-size: 16px;">
+                        🟢 Market is open
+                    </div>
+                    <div style="opacity: 0.9; text-align: center;">
+                        Scanner results are based on the last fully closed daily candle.<br>
+                        Live intraday candles are excluded from setup detection.
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    else:
+        st.markdown(
+            """
+            <div style="
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+                margin-top: 50px; /* הוספנו מרווח משמעותי מלמעלה */
+                margin-bottom: 20px;
+            ">
+                <div style="
+                    padding: 8px 24px;
+                    border-radius: 30px; /* עיגול חזק יותר למראה מודרני */
+                    background: rgba(220, 38, 38, 0.08);
+                    border: 1px solid rgba(248, 113, 113, 0.2);
+                    color: #94a3b8;
+                    font-size: 13px;
+                    white-space: nowrap;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 10px;
+                ">
+                    <span style="font-weight: 700; color: #f87171;">● Market is closed</span>
+                    <span style="border-left: 1px solid rgba(148, 163, 184, 0.3); padding-left: 10px;">
+                        Scanner results are based on the most recent completed daily candle.
+                    </span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 # ---------- RESULTS ----------
 
