@@ -190,24 +190,20 @@ st.markdown(
 # ---------- HEADER ----------
 
 st.markdown(
+
     f"""
+    
+    
+    
     <div class="brand-header">
         <img class="brand-logo" src="data:image/png;base64,{logo_base64}">
         
-    </div>
-
-    <div class="main-title">
-        The STRATapp Scanner
-    </div>
-
-    <div class="sub-title">
-        AI-ranked STRAT setups for active traders.
     </div>
     
     
     <div style='
         text-align:center;
-        margin-top:8px;
+        margin-top:-6px;
         margin-bottom:18px;
     '>
         <span style='
@@ -223,6 +219,21 @@ st.markdown(
             BETA v1
         </span>
     </div>
+    
+    
+    
+    <div class="main-title">
+        The STRATapp Scanner
+    </div>
+    
+    
+    
+    <div class="sub-title">
+        AI-ranked STRAT setups for active traders.
+    </div>
+    
+    
+    
     
     """,
     unsafe_allow_html=True
@@ -416,8 +427,44 @@ with center:
     )
 
     if run_clicked:
-        with st.spinner("Scanning and ranking best setups..."):
-            st.session_state.scan_results = run_scan()
+        loader = st.empty()
+
+        loader.markdown("""
+        <div style='
+            text-align:center;
+            color:#cbd5e1;
+            font-size:18px;
+            margin-top:18px;
+            font-weight:700;
+        '>
+            Scanning market data... please wait
+        </div>
+        """, unsafe_allow_html=True)
+
+        try:
+            results = run_scan()
+
+            if results:
+                st.session_state.scan_results = results
+                loader.empty()
+            else:
+                loader.empty()
+                st.markdown("""
+                <div style="
+                    text-align:center;
+                    color:#ff6b6b;
+                    font-size:15px;
+                    margin-top:18px;
+                    margin-bottom:10px;
+                ">
+                    No valid setups found in current market conditions.
+                </div>
+                """, unsafe_allow_html=True)
+
+        except Exception as e:
+            loader.empty()
+            st.error("Scan failed. Check terminal logs.")
+            st.exception(e)
 
     market_is_open = is_market_open()
 
@@ -429,28 +476,25 @@ with center:
                 justify-content: center;
                 align-items: center;
                 width: 100%;
-                margin: 15px 0;
+                margin-top: 50px;
+                margin-bottom: 20px;
             ">
                 <div style="
-                    padding: 10px 24px;
-                    border-radius: 12px;
-                    background: rgba(22, 163, 74, 0.10);
-                    border: 1px solid rgba(34, 197, 94, 0.35);
-                    color: #d1fae5;
-                    font-size: 14px;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    padding: 8px 24px;
+                    border-radius: 30px;
+                    background: rgba(22, 163, 74, 0.08);
+                    border: 1px solid rgba(34, 197, 94, 0.25);
+                    color: #94a3b8;
+                    font-size: 13px;
+                    white-space: nowrap;
                     display: inline-flex;
-                    flex-direction: column;
                     align-items: center;
-                    gap: 4px;
+                    gap: 10px;
                 ">
-                    <div style="font-weight: 700; font-size: 16px;">
-                        🟢 Market is open
-                    </div>
-                    <div style="opacity: 0.9; text-align: center;">
-                        Scanner results are based on the last fully closed daily candle.<br>
-                        Live intraday candles are excluded from setup detection.
-                    </div>
+                    <span style="font-weight: 700; color: #4ade80;">● Market is open</span>
+                    <span style="border-left: 1px solid rgba(148, 163, 184, 0.3); padding-left: 10px;">
+                        Scanner results are based on the last fully closed daily candle.
+                    </span>
                 </div>
             </div>
             """,

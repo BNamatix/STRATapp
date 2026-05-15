@@ -121,10 +121,10 @@ def run_scan():
         if levels.get("RR") is None:
             continue
 
-        if levels["Reward $"] < 1.5:
+        if levels["Reward $"] < 0.5:
             continue
 
-        if levels["RR"] < 1.5:
+        if levels["RR"] < 1.0:
             continue
 
         last_row = df.iloc[-1]
