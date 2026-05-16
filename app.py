@@ -1,6 +1,5 @@
 import base64
 from datetime import datetime
-import streamlit.components.v1 as components
 import pandas as pd
 import plotly.graph_objects as go
 import pytz
@@ -9,19 +8,23 @@ from textwrap import dedent
 from src.scanner import run_scan
 from src.data_loader import get_stock_data
 from src.market_context import is_market_open
-from streamlit_gtag import st_gtag
 
 st.set_page_config(
     page_title="The STRATapp Scanner",
     layout="wide"
 )
 
-st_gtag(
-    gtag_id="G-3PTS6JR0EP",
-    config={
-        "send_page_view": True
-    }
-)
+GA_ID = "G-3PTS6JROEP"
+
+st.html(f"""
+<script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){{dataLayer.push(arguments);}}
+gtag('js', new Date());
+gtag('config', '{GA_ID}');
+</script>
+""")
 
 st.markdown(
     """
@@ -71,25 +74,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-components.html(
-    """
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3PTS6JR0EP"></script>
-
-    <script>
-      window.dataLayer = window.dataLayer || [];
-
-      function gtag(){
-          dataLayer.push(arguments);
-      }
-
-      gtag('js', new Date());
-
-      gtag('config', 'G-3PTS6JR0EP');
-    </script>
-    """,
-    height=0
-)
 
 # ---------- MARKET STATUS ----------
 
