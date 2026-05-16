@@ -9,10 +9,18 @@ from textwrap import dedent
 from src.scanner import run_scan
 from src.data_loader import get_stock_data
 from src.market_context import is_market_open
+from streamlit_gtag import st_gtag
 
 st.set_page_config(
     page_title="The STRATapp Scanner",
     layout="wide"
+)
+
+st_gtag(
+    gtag_id="G-3PTS6JR0EP",
+    config={
+        "send_page_view": True
+    }
 )
 
 st.markdown(
