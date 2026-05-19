@@ -8,7 +8,7 @@ from textwrap import dedent
 from src.scanner import run_scan
 from src.data_loader import get_stock_data
 from src.market_context import is_market_open
-
+import streamlit.components.v1 as components
 st.set_page_config(
     page_title="The STRATapp Scanner",
     layout="wide"
